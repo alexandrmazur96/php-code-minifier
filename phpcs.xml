@@ -4,9 +4,9 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="vendor/squizlabs/php_codesniffer/phpcs.xsd"
 >
-    <config name="php_version" value="80000" />
+    <config name="php_version" value="80000"/>
 
-    <arg name="basepath" value ="." />
+    <arg name="basepath" value="."/>
 
     <file>src</file>
     <file>tests</file>
@@ -21,10 +21,10 @@
             <property name="searchAnnotations" value="true"/>
         </properties>
     </rule>
-    <rule ref="PEAR.Commenting.FunctionComment.SpacingAfter" />
+    <rule ref="PEAR.Commenting.FunctionComment.SpacingAfter"/>
     <rule ref="SlevomatCodingStandard.Namespaces.AlphabeticallySortedUses">
         <properties>
-            <property name="caseSensitive" value="true" />
+            <property name="caseSensitive" value="true"/>
         </properties>
     </rule>
     <rule ref="SlevomatCodingStandard.Namespaces.MultipleUsesPerLine"/>
@@ -44,5 +44,8 @@
             <property name="linesCountBetweenUseTypes" value="1"/>
             <property name="linesCountAfterLastUse" value="1"/>
         </properties>
+    </rule>
+    <rule ref="Squiz.Functions">
+        <exclude name="Squiz.Functions.FunctionDeclarationArgumentSpacing.SpacingAfterHint"/>
     </rule>
 </ruleset>
