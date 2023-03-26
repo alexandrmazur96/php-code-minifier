@@ -32,7 +32,7 @@ final class PhpMinifierTest extends TestCase
 
     public function testMinifyFileNotPhpFile(): void
     {
-        $filePath = __DIR__ . '/../Fixtures/ActualFiles/non-php-file.txt';
+        $filePath = self::FIXTURES_DIR . '/ActualFiles/non-php-file.txt';
         $this->expectException(IncorrectFileException::class);
         $this->expectExceptionMessage(sprintf('File (%s) must have .php extension.', $filePath));
 
@@ -41,7 +41,7 @@ final class PhpMinifierTest extends TestCase
 
     public function testMinifyFileIsDirectory(): void
     {
-        $filePath = __DIR__ . '/../Fixtures/ActualFiles';
+        $filePath = self::FIXTURES_DIR . '/ActualFiles';
         $this->expectException(IncorrectFileException::class);
         $this->expectExceptionMessage(sprintf('File (%s) is a directory.', $filePath));
 
@@ -50,7 +50,7 @@ final class PhpMinifierTest extends TestCase
 
     public function testMinifyFileNotFound(): void
     {
-        $filePath = __DIR__ . '/../Fixtures/ActualFiles/file_not_exists.php';
+        $filePath = self::FIXTURES_DIR . '/ActualFiles/file_not_exists.php';
         $this->expectException(IncorrectFileException::class);
         $this->expectExceptionMessage(sprintf('File (%s) not found.', $filePath));
 
@@ -64,7 +64,7 @@ final class PhpMinifierTest extends TestCase
     public function testMinifyFile(string $filePath): void
     {
         $actualResult = $this->minifier->minifyFile($filePath);
-        $expectedResult = file_get_contents(__DIR__ . '/../Fixtures/Expected/' . basename($filePath));
+        $expectedResult = file_get_contents(self::FIXTURES_DIR . '/Expected/' . basename($filePath));
         $this->assertEquals($expectedResult, $actualResult);
         $this->assertCodeLintedOk($actualResult);
     }
@@ -73,7 +73,7 @@ final class PhpMinifierTest extends TestCase
     public function testMinifyContent(string $filePath): void
     {
         $actualResult = $this->minifier->minifyString(file_get_contents($filePath));
-        $expectedResult = file_get_contents(__DIR__ . '/../Fixtures/Expected/' . basename($filePath));
+        $expectedResult = file_get_contents(self::FIXTURES_DIR . '/Expected/' . basename($filePath));
         $this->assertEquals($expectedResult, $actualResult);
         $this->assertCodeLintedOk($actualResult);
     }
