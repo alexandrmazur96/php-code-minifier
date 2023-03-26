@@ -12,7 +12,7 @@ jobs:
         php: ['8.0', '8.1', '8.2']
 
   steps:
-    - uses: actions/checkout@main
+    - uses: actions/checkout@v3
 
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
@@ -23,8 +23,22 @@ jobs:
     - name: PHP Version
       run: php -v
 
-    - name: Install dependencies
-      run: composer install -o --prefer-dist --no-progress --no-suggest
+    - name: Get Composer Cache Directory
+      id: composer-cache
+      run: |
+        echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+    - uses: actions/cache@v3
+      with:
+        path: ${{ steps.composer-cache.outputs.dir }}
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-composer-
+
+    - name: Install Dependencies
+      run: composer install -q --no-ansi --no-interaction --no-progress --prefer-dist
+
+    - name: Run parallel-lint
+      run: vendor/bin/parallel-lint --exclude .git --exclude vendor .
 
     - name: Check coding style
       run: vendor/bin/phpcs
