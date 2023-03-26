@@ -1,6 +1,8 @@
 /tests       export-ignore
+/.github     export-ignore
 /phpunit.xml export-ignore
 /phpcs.xml   export-ignore
 /psalm.xml   export-ignore
+/README.md   export-ignore
 
 *.php diff=php
