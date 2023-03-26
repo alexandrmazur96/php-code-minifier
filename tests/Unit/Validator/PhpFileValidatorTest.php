@@ -31,7 +31,7 @@ final class PhpFileValidatorTest extends TestCase
         $this->validator->validate(self::FIXTURES_DIR . '/ActualFiles/PhpClass.php');
     }
 
-    public function testValidatorFileIsDirectory(): void
+    public function testValidateFileIsDirectory(): void
     {
         $filePath = self::FIXTURES_DIR . '/ActualFiles';
         $this->expectException(IncorrectFileException::class);
@@ -39,7 +39,7 @@ final class PhpFileValidatorTest extends TestCase
         $this->validator->validate($filePath);
     }
 
-    public function testValidatorFileNotExists(): void
+    public function testValidateFileNotExists(): void
     {
         $filePath = self::FIXTURES_DIR . '/ActualFiles/file_not_exists.php';
         $this->expectException(IncorrectFileException::class);
