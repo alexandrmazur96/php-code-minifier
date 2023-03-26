@@ -8,4 +8,5 @@ use PHPUnit\Framework\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
 {
+    protected const FIXTURES_DIR = __DIR__ . '/Fixtures';
 }

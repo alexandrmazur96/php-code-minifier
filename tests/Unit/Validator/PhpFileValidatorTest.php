@@ -28,12 +28,12 @@ final class PhpFileValidatorTest extends TestCase
     public function testValidateFileHasPhpExtension(): void
     {
         $this->expectNotToPerformAssertions();
-        $this->validator->validate(__DIR__ . '/../../Fixtures/ActualFiles/PhpClass.php');
+        $this->validator->validate(self::FIXTURES_DIR . '/ActualFiles/PhpClass.php');
     }
 
     public function testValidatorFileIsDirectory(): void
     {
-        $filePath = __DIR__ . '/../../Fixtures/ActualFiles';
+        $filePath = self::FIXTURES_DIR . '/ActualFiles';
         $this->expectException(IncorrectFileException::class);
         $this->expectExceptionMessage('File (' . $filePath . ') is a directory.');
         $this->validator->validate($filePath);
@@ -41,7 +41,7 @@ final class PhpFileValidatorTest extends TestCase
 
     public function testValidatorFileNotExists(): void
     {
-        $filePath = __DIR__ . '/../../Fixtures/ActualFiles/file_not_exists.php';
+        $filePath = self::FIXTURES_DIR . '/ActualFiles/file_not_exists.php';
         $this->expectException(IncorrectFileException::class);
         $this->expectExceptionMessage('File (' . $filePath . ') not found.');
         $this->validator->validate($filePath);
@@ -49,7 +49,7 @@ final class PhpFileValidatorTest extends TestCase
 
     public function testValidateFileHasNotPhpExtension(): void
     {
-        $filePath = __DIR__ . '/../../Fixtures/ActualFiles/non-php-file.txt';
+        $filePath = self::FIXTURES_DIR . '/ActualFiles/non-php-file.txt';
         $this->expectException(IncorrectFileException::class);
         $this->expectExceptionMessage('File (' . $filePath . ') must have .php extension.');
         $this->validator->validate($filePath);

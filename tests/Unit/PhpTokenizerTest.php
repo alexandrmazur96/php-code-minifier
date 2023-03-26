@@ -68,13 +68,11 @@ final class PhpTokenizerTest extends TestCase
      */
     public static function filesToTokenizeProvider(): Generator
     {
-        yield 'non-php-file' => [__DIR__ . '/../Fixtures/ActualFiles/non-php-file.txt'];
-        yield 'php-file-without-code' => [__DIR__ . '/../Fixtures/ActualFiles/no-php-code.php'];
-        yield 'php-file-with-just-php-code' => [__DIR__ . '/../Fixtures/ActualFiles/just-php-code.php'];
-        yield 'php-file-with-php-class' => [__DIR__ . '/../Fixtures/ActualFiles/PhpClass.php'];
-        yield 'php-file-with-mixed-php-and-html' => [__DIR__ . '/../Fixtures/ActualFiles/mixed-php-and-html.php'];
-        yield 'php-file-with-single-line-comment' => [
-            __DIR__ . '/../Fixtures/ActualFiles/php-code-with-single-comment.php',
-        ];
+        yield 'non-php-file' => [self::FIXTURES_DIR . '/ActualFiles/non-php-file.txt'];
+        yield 'without-code' => [self::FIXTURES_DIR . '/ActualFiles/no-php-code.php'];
+        yield 'with-just-php-code' => [self::FIXTURES_DIR . '/ActualFiles/just-php-code.php'];
+        yield 'with-php-class' => [self::FIXTURES_DIR . '/ActualFiles/PhpClass.php'];
+        yield 'with-mixed-php-and-html' => [self::FIXTURES_DIR . '/ActualFiles/mixed-php-and-html.php'];
+        yield 'with-single-line-comment' => [self::FIXTURES_DIR . '/ActualFiles/php-code-with-single-comment.php'];
     }
 }

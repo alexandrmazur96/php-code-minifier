@@ -78,18 +78,14 @@ final class PhpMinifierTest extends TestCase
         $this->assertCodeLintedOk($actualResult);
     }
 
-    /**
-     * @psalm-return Generator<string, list{string}, mixed, void>
-     */
+    /** @psalm-return Generator<string, list{string}, mixed, void> */
     public static function phpFilesProvider(): Generator
     {
-        yield 'php-file-without-code' => [__DIR__ . '/../Fixtures/ActualFiles/no-php-code.php'];
-        yield 'php-file-with-just-php-code' => [__DIR__ . '/../Fixtures/ActualFiles/just-php-code.php'];
-        yield 'php-file-with-php-class' => [__DIR__ . '/../Fixtures/ActualFiles/PhpClass.php'];
-        yield 'php-file-with-mixed-php-and-html' => [__DIR__ . '/../Fixtures/ActualFiles/mixed-php-and-html.php'];
-        yield 'php-file-with-single-line-comment' => [
-            __DIR__ . '/../Fixtures/ActualFiles/php-code-with-single-comment.php',
-        ];
+        yield 'without-code' => [self::FIXTURES_DIR . '/ActualFiles/no-php-code.php'];
+        yield 'with-just-php-code' => [self::FIXTURES_DIR . '/ActualFiles/just-php-code.php'];
+        yield 'with-php-class' => [self::FIXTURES_DIR . '/ActualFiles/PhpClass.php'];
+        yield 'with-mixed-php-and-html' => [self::FIXTURES_DIR . '/ActualFiles/mixed-php-and-html.php'];
+        yield 'with-single-line-comment' => [self::FIXTURES_DIR . '/ActualFiles/php-code-with-single-comment.php'];
     }
 
     /**
@@ -98,7 +94,7 @@ final class PhpMinifierTest extends TestCase
      */
     private function assertCodeLintedOk(string $minifiedCode): void
     {
-        $filePath = __DIR__ . '/../Fixtures/ActualFiles/tmp.php';
+        $filePath = self::FIXTURES_DIR . '/tmp.php';
         file_put_contents($filePath, $minifiedCode);
         $lintResult = shell_exec('php -l ' . $filePath);
         try {
