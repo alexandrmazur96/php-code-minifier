@@ -7,8 +7,7 @@
          executionOrder="random"
          failOnRisky="true"
          failOnWarning="true"
-         failOnIncomplete="true"
-         cacheDirectory=".phpunit.cache">
+         failOnIncomplete="true">
     <coverage>
         <include>
             <directory suffix=".php">./src</directory>
