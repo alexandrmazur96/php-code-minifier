@@ -8,6 +8,13 @@ use PhpCodeMinifier\Exceptions\IncorrectFileException;
 
 class PhpTokenizer
 {
+    private const STRING_TOKENS = [
+        T_ENCAPSED_AND_WHITESPACE  => true,
+        T_CONSTANT_ENCAPSED_STRING => true,
+        T_STRING_VARNAME           => true,
+        T_NUM_STRING               => true,
+    ];
+
     /**
      * Parse php file with built-in {@see token_get_all()} function and return proper code sequence.
      * @return array<string,array<array-key,array{token:string}>>
@@ -72,11 +79,15 @@ class PhpTokenizer
                 continue;
             }
 
-            if (is_array($token) && $token[0] === T_COMMENT && str_starts_with($token[1], '//')) {
-                $tokenStr = '/*' . $tokenStr . '*/';
+            if ($currentContentType === 'php') {
+                if (is_array($token) && $token[0] === T_COMMENT && str_starts_with($token[1], '//')) {
+                    $tokenStr = '/*' . $tokenStr . '*/';
+                } elseif (!array_key_exists($token[0], self::STRING_TOKENS)) {
+                    $tokenStr = preg_replace('|\s+|', '', $tokenStr);
+                }
             }
             $content[$currentContentType . '_' . $index][] = [
-                'token' => $currentContentType === 'php' ? preg_replace('|\s+|', '', $tokenStr) : $tokenStr,
+                'token' => $tokenStr,
             ];
         }
 

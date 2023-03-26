@@ -11,13 +11,35 @@ class PhpFileValidator
     /** @throws IncorrectFileException */
     public function validate(string $filePath): void
     {
-        if (!$this->isFileHasPhpExtension($filePath)) {
-            throw new IncorrectFileException(sprintf('File %s must have .php extension.', $filePath));
-        }
+        $this->assertIsNotDirectory($filePath);
+        $this->assertIsFile($filePath);
+        $this->assertFileHasPhpExtension($filePath);
     }
 
-    private function isFileHasPhpExtension(string $filePath): bool
+    /** @throws IncorrectFileException */
+    private function assertIsNotDirectory(string $filePath): void
     {
-        return str_ends_with($filePath, '.php');
+        assert(
+            !is_dir($filePath),
+            new IncorrectFileException(sprintf('File (%s) is a directory.', $filePath))
+        );
+    }
+
+    /** @throws IncorrectFileException */
+    private function assertIsFile(string $filePath): void
+    {
+        assert(
+            is_file($filePath),
+            new IncorrectFileException(sprintf('File (%s) not found.', $filePath))
+        );
+    }
+
+    /** @throws IncorrectFileException */
+    private function assertFileHasPhpExtension(string $filePath): void
+    {
+        assert(
+            str_ends_with($filePath, '.php'),
+            new IncorrectFileException(sprintf('File (%s) must have .php extension.', $filePath))
+        );
     }
 }
