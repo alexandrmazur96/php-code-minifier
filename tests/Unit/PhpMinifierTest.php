@@ -92,13 +92,17 @@ final class PhpMinifierTest extends TestCase
         ];
     }
 
+    /**
+     * We do understand, that calling shell_exec is unsafe, but for testing purposes we leave it as is.
+     * @psalm-suppress ForbiddenCode
+     */
     private function assertCodeLintedOk(string $minifiedCode): void
     {
         $filePath = __DIR__ . '/../Fixtures/ActualFiles/tmp.php';
         file_put_contents($filePath, $minifiedCode);
         $lintResult = shell_exec('php -l ' . $filePath);
         try {
-            $this->assertStringContainsString('No syntax errors detected in', $lintResult);
+            $this->assertStringContainsString('No syntax errors detected in', $lintResult ?? '');
         } finally {
             @unlink($filePath);
         }
