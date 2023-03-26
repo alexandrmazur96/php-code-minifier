@@ -48,7 +48,7 @@ jobs:
         run: vendor/bin/phpcs
 
       - name: Static code analysis
-        run: vendor/bin/psalm --show-info=true
+        run: vendor/bin/psalm --show-info=true --long-progress
 
       - name: Run tests
         run: vendor/bin/phpunit --testdox
