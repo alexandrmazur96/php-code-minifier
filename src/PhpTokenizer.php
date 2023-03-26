@@ -68,6 +68,9 @@ class PhpTokenizer
                 continue;
             }
             $tokenStr = $token[1] ?? $token;
+            if (trim($tokenStr) === '') {
+                continue;
+            }
             $content[$currentContentType . '_' . $index][] = [
                 'token'  => $currentContentType === 'php' ? preg_replace('|\s+|', '', $tokenStr) : $tokenStr,
             ];
