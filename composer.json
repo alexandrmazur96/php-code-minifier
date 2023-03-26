@@ -13,11 +13,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "PhpCodeMinifier\\": "src/"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
+            "PhpCodeMinifier\\": "src/",
             "PhpCodeMinifier\\Tests\\": "tests/"
         }
     },
@@ -34,7 +30,8 @@
         "phpunit/phpunit": "^10.0",
         "squizlabs/php_codesniffer": "^3.7",
         "slevomat/coding-standard": "^8.8",
-        "vimeo/psalm": "^5.8"
+        "vimeo/psalm": "^5.8",
+        "psalm/plugin-phpunit": "^0.18.4"
     },
     "config": {
         "allow-plugins": {
