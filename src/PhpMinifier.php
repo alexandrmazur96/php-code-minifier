@@ -104,6 +104,7 @@ class PhpMinifier
         return $str;
     }
 
+    /** @param array<int, array{token:string}> $tokens */
     private function handlePhpTokens(array $tokens): string
     {
         $str = '';
@@ -134,8 +135,6 @@ class PhpMinifier
             } elseif ($token['token'] !== '') {
                 // each other statements should be divided by space.
                 $str .= $token['token'] . ' ';
-            } else {
-                throw new \RuntimeException('Unexpected token: ' . $token['token']);
             }
         }
 
