@@ -11,6 +11,8 @@
     <file>src</file>
     <file>tests</file>
 
+    <exclude-pattern>tests/Fixtures</exclude-pattern>
+
     <description>A custom coding standard</description>
     <rule ref="PSR12"/>
     <rule ref="SlevomatCodingStandard.TypeHints.ParameterTypeHint"/>
