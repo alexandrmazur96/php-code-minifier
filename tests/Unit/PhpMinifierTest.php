@@ -66,6 +66,7 @@ final class PhpMinifierTest extends TestCase
         $actualResult = $this->minifier->minifyFile($filePath);
         $expectedResult = file_get_contents(__DIR__ . '/../Fixtures/Expected/' . basename($filePath));
         $this->assertEquals($expectedResult, $actualResult);
+        $this->assertCodeLintedOk($actualResult);
     }
 
     /** @dataProvider phpFilesProvider */
@@ -74,6 +75,7 @@ final class PhpMinifierTest extends TestCase
         $actualResult = $this->minifier->minifyString(file_get_contents($filePath));
         $expectedResult = file_get_contents(__DIR__ . '/../Fixtures/Expected/' . basename($filePath));
         $this->assertEquals($expectedResult, $actualResult);
+        $this->assertCodeLintedOk($actualResult);
     }
 
     /**
@@ -88,5 +90,17 @@ final class PhpMinifierTest extends TestCase
         yield 'php-file-with-single-line-comment' => [
             __DIR__ . '/../Fixtures/ActualFiles/php-code-with-single-comment.php',
         ];
+    }
+
+    private function assertCodeLintedOk(string $minifiedCode): void
+    {
+        $filePath = __DIR__ . '/../Fixtures/ActualFiles/tmp.php';
+        file_put_contents($filePath, $minifiedCode);
+        $lintResult = shell_exec('php -l ' . $filePath);
+        try {
+            $this->assertStringContainsString('No syntax errors detected in', $lintResult);
+        } finally {
+            @unlink($filePath);
+        }
     }
 }
