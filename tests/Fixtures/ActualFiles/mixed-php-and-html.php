@@ -18,7 +18,7 @@ $some = 'php code';
 </body>
 </html>
 
-<?= echo 'another php code' ?>
+<?=  'another php code' ?>
 
 <p>Some html code</p>
 

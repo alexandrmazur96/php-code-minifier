@@ -13,7 +13,7 @@
 </body>
 </html>
 
-<?=echo 'another php code'?>
+<?='another php code'?>
 <p>Some html code</p>
 
 <? echo 'and another php code with short opening tag' ?>
