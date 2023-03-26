@@ -6,6 +6,8 @@
          beStrictAboutChangesToGlobalState="true"
          executionOrder="random"
          failOnRisky="true"
+         failOnWarning="true"
+         failOnIncomplete="true"
          cacheDirectory=".phpunit.cache">
     <coverage>
         <include>
