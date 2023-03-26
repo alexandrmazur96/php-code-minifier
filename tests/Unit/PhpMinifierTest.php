@@ -72,8 +72,7 @@ final class PhpMinifierTest extends TestCase
     public function testMinifyContent(string $filePath): void
     {
         $actualResult = $this->minifier->minifyString(file_get_contents($filePath));
-        $expextedFp = __DIR__ . '/../Fixtures/Expected/' . basename($filePath);
-        $expectedResult = file_get_contents($expextedFp);
+        $expectedResult = file_get_contents(__DIR__ . '/../Fixtures/Expected/' . basename($filePath));
         $this->assertEquals($expectedResult, $actualResult);
     }
 
