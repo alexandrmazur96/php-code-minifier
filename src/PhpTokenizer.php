@@ -6,6 +6,9 @@ namespace PhpCodeMinifier;
 
 use PhpCodeMinifier\Exceptions\IncorrectFileException;
 
+/**
+ * @psalm-type _PhpToken = array{0: int, 1: string, 2: int}
+ */
 class PhpTokenizer
 {
     private const STRING_TOKENS = [
@@ -50,20 +53,21 @@ class PhpTokenizer
      * 3. If we have T_INLINE_HTML we add it to html group.
      * 4. Each new group starts with new index so when we iterate through result array we will keep correct sequence.
      *
-     * @return array<string,array<array-key,array{token:string}>>
+     * @psalm-return array<string, list<array{token: string}>>
      */
     private function tokenizeContent(string $fileContent): array
     {
         $content = [];
         $index = 0;
-        $currentContentType = null;
+        $currentContentType = '';
+        /** @var _PhpToken|string $token */
         foreach (token_get_all($fileContent) as $token) {
             if (is_array($token) && ($token[0] === T_OPEN_TAG || $token[0] === T_OPEN_TAG_WITH_ECHO)) {
                 if ($currentContentType === 'html') {
                     $index++;
                 }
                 $currentContentType = 'php';
-                $content['php_' . $index][] = ['token' => preg_replace('|\s+|', '', $token[1])];
+                $content['php_' . $index][] = ['token' => (string)preg_replace('|\s+|', '', $token[1])];
                 continue;
             }
             if (is_array($token) && $token[0] === T_INLINE_HTML) {
@@ -74,7 +78,13 @@ class PhpTokenizer
                 $content['html_' . $index][] = ['token' => $token[1]];
                 continue;
             }
-            $tokenStr = $token[1] ?? $token;
+
+            if (is_array($token)) {
+                $tokenStr = $token[1];
+            } else {
+                $tokenStr = $token;
+            }
+
             if (trim($tokenStr) === '') {
                 continue;
             }
@@ -83,9 +93,10 @@ class PhpTokenizer
                 if (is_array($token) && $token[0] === T_COMMENT && str_starts_with($token[1], '//')) {
                     $tokenStr = '/*' . $tokenStr . '*/';
                 } elseif (!array_key_exists($token[0], self::STRING_TOKENS)) {
-                    $tokenStr = preg_replace('|\s+|', '', $tokenStr);
+                    $tokenStr = (string)preg_replace('|\s+|', '', $tokenStr);
                 }
             }
+
             $content[$currentContentType . '_' . $index][] = [
                 'token' => $tokenStr,
             ];
