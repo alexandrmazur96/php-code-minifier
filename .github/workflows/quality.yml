@@ -36,7 +36,7 @@ jobs:
             ${{ runner.os }}-composer-
 
       - name: Install Dependencies
-        run: composer install -q --no-ansi --no-interaction --no-progress --prefer-dist
+        run: composer install
 
       - name: Run parallel-lint
         run: vendor/bin/parallel-lint --exclude .git --exclude vendor .
