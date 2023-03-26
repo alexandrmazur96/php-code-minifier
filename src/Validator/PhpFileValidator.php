@@ -12,7 +12,7 @@ class PhpFileValidator
     public function validate(string $filePath): void
     {
         if (!$this->isFileHasPhpExtension($filePath)) {
-            throw new IncorrectFileException('File must have .php extension');
+            throw new IncorrectFileException(sprintf('File %s must have .php extension.', $filePath));
         }
     }
 
