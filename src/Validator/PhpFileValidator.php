@@ -19,27 +19,24 @@ class PhpFileValidator
     /** @throws IncorrectFileException */
     private function assertIsNotDirectory(string $filePath): void
     {
-        assert(
-            !is_dir($filePath),
-            new IncorrectFileException(sprintf('File (%s) is a directory.', $filePath))
-        );
+        if (is_dir($filePath)) {
+            throw new IncorrectFileException(sprintf('File (%s) is a directory.', $filePath));
+        }
     }
 
     /** @throws IncorrectFileException */
     private function assertIsFile(string $filePath): void
     {
-        assert(
-            is_file($filePath),
-            new IncorrectFileException(sprintf('File (%s) not found.', $filePath))
-        );
+        if (!is_file($filePath)) {
+            throw new IncorrectFileException(sprintf('File (%s) not found.', $filePath));
+        }
     }
 
     /** @throws IncorrectFileException */
     private function assertFileHasPhpExtension(string $filePath): void
     {
-        assert(
-            str_ends_with($filePath, '.php'),
-            new IncorrectFileException(sprintf('File (%s) must have .php extension.', $filePath))
-        );
+        if (!str_ends_with($filePath, '.php')) {
+            throw new IncorrectFileException(sprintf('File (%s) must have .php extension.', $filePath));
+        }
     }
 }
