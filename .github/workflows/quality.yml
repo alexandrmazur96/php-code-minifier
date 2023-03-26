@@ -8,7 +8,7 @@ concurrency:
 
 jobs:
   quality:
-    name: Run quality checks on ${{ matrix.php }}
+    name: Run quality checks on PHP v${{ matrix.php }}
     runs-on: ubuntu-latest
     continue-on-error: true
     strategy:
@@ -24,9 +24,6 @@ jobs:
           php-version: ${{ matrix.php }}
           tools: composer:v2
 
-      - name: PHP Version
-        run: php -v
-
       - name: Get Composer Cache Directory
         id: composer-cache
         run: |
@@ -39,7 +36,7 @@ jobs:
             ${{ runner.os }}-composer-
 
       - name: Install Dependencies
-        run: composer install -q --no-ansi --no-interaction --no-progress --prefer-dist
+        run: composer install -o -q --no-ansi --no-interaction --no-progress --prefer-dist
 
       - name: Run parallel-lint
         run: vendor/bin/parallel-lint --exclude .git --exclude vendor .
