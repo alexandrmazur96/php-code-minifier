@@ -10,8 +10,8 @@ class PhpTokenizer
 {
     /**
      * Parse php file with built-in {@see token_get_all()} function and return proper code sequence.
-     * @throws IncorrectFileException
      * @return array<string,array<array-key,array{token:string}>>
+     * @throws IncorrectFileException
      */
     public function tokenizeFile(string $filePath): array
     {
@@ -71,8 +71,12 @@ class PhpTokenizer
             if (trim($tokenStr) === '') {
                 continue;
             }
+
+            if (is_array($token) && $token[0] === T_COMMENT && str_starts_with($token[1], '//')) {
+                $tokenStr = '/*' . $tokenStr . '*/';
+            }
             $content[$currentContentType . '_' . $index][] = [
-                'token'  => $currentContentType === 'php' ? preg_replace('|\s+|', '', $tokenStr) : $tokenStr,
+                'token' => $currentContentType === 'php' ? preg_replace('|\s+|', '', $tokenStr) : $tokenStr,
             ];
         }
 
