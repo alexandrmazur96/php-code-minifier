@@ -66,7 +66,7 @@ final class PhpMinifierTest extends TestCase
         $actualResult = $this->minifier->minifyFile($filePath);
         $expectedResult = file_get_contents(self::FIXTURES_DIR . '/Expected/' . basename($filePath));
         $this->assertEquals($expectedResult, $actualResult);
-        $this->assertCodeLintedOk($actualResult);
+        $this->assertMinifiedCodeLintedOk($actualResult);
     }
 
     /** @dataProvider phpFilesProvider */
@@ -75,7 +75,93 @@ final class PhpMinifierTest extends TestCase
         $actualResult = $this->minifier->minifyString(file_get_contents($filePath));
         $expectedResult = file_get_contents(self::FIXTURES_DIR . '/Expected/' . basename($filePath));
         $this->assertEquals($expectedResult, $actualResult);
-        $this->assertCodeLintedOk($actualResult);
+        $this->assertMinifiedCodeLintedOk($actualResult);
+    }
+
+    /**
+     * @dataProvider phpFilesProvider
+     * @throws IncorrectFileException
+     */
+    public function testMinifyFileToFile(string $filePath): void
+    {
+        $outputFile = $filePath . '.min.php';
+        try {
+            $this->minifier->minifyFileToFile($filePath, $outputFile);
+            $this->assertFileExists($outputFile);
+            $this->assertMinifiedFileLintedOk($outputFile);
+            $this->assertFileEquals(self::FIXTURES_DIR . '/Expected/' . basename($filePath), $outputFile);
+        } finally {
+            @unlink($outputFile);
+        }
+    }
+
+    public function testMinifyFileToFileOutputFileIsDirectory(): void
+    {
+        $this->expectException(IncorrectFileException::class);
+        $this->expectExceptionMessage('File is a directory: ' . self::FIXTURES_DIR . '/ActualFiles');
+        $this->minifier->minifyFileToFile(
+            self::FIXTURES_DIR . '/ActualFiles/just-php-code.php',
+            self::FIXTURES_DIR . '/ActualFiles'
+        );
+    }
+
+    public function testMinifyFileToFileOutputFileIsNotWriteable(): void
+    {
+        $readonlyFilePath = $this->createReadonlyFile();
+        $this->expectException(IncorrectFileException::class);
+        $this->expectExceptionMessage('Unable to write to file: ' . $readonlyFilePath);
+
+        try {
+            $this->minifier->minifyFileToFile(
+                self::FIXTURES_DIR . '/ActualFiles/just-php-code.php',
+                $readonlyFilePath
+            );
+        } finally {
+            @unlink($readonlyFilePath);
+        }
+    }
+
+    /**
+     * @dataProvider phpFilesProvider
+     * @throws IncorrectFileException
+     */
+    public function testMinifyStringToFile(string $filePath): void
+    {
+        $outputFile = $filePath . '.min.php';
+        try {
+            $this->minifier->minifyStringToFile(file_get_contents($filePath), $outputFile);
+            $this->assertFileExists($outputFile);
+            $this->assertMinifiedFileLintedOk($outputFile);
+            $this->assertFileEquals(self::FIXTURES_DIR . '/Expected/' . basename($filePath), $outputFile);
+        } finally {
+            @unlink($outputFile);
+        }
+    }
+
+    public function testMinifyStringToFileOutputFileIsDirectory(): void
+    {
+        $this->expectException(IncorrectFileException::class);
+        $this->expectExceptionMessage('File is a directory: ' . self::FIXTURES_DIR . '/ActualFiles');
+        $this->minifier->minifyStringToFile(
+            file_get_contents(self::FIXTURES_DIR . '/ActualFiles/just-php-code.php'),
+            self::FIXTURES_DIR . '/ActualFiles'
+        );
+    }
+
+    public function testMinifyStringToFileOutputFileIsNotWriteable(): void
+    {
+        $readonlyFilePath = $this->createReadonlyFile();
+        $this->expectException(IncorrectFileException::class);
+        $this->expectExceptionMessage('Unable to write to file: ' . $readonlyFilePath);
+
+        try {
+            $this->minifier->minifyStringToFile(
+                file_get_contents(self::FIXTURES_DIR . '/ActualFiles/just-php-code.php'),
+                $readonlyFilePath
+            );
+        } finally {
+            @unlink($readonlyFilePath);
+        }
     }
 
     /** @psalm-return Generator<string, list{string}, mixed, void> */
@@ -92,7 +178,7 @@ final class PhpMinifierTest extends TestCase
      * We do understand, that calling shell_exec is unsafe, but for testing purposes we leave it as is.
      * @psalm-suppress ForbiddenCode
      */
-    private function assertCodeLintedOk(string $minifiedCode): void
+    private function assertMinifiedCodeLintedOk(string $minifiedCode): void
     {
         $filePath = self::FIXTURES_DIR . '/tmp.php';
         file_put_contents($filePath, $minifiedCode);
@@ -102,5 +188,27 @@ final class PhpMinifierTest extends TestCase
         } finally {
             @unlink($filePath);
         }
+    }
+
+    /**
+     * We do understand, that calling shell_exec is unsafe, but for testing purposes we leave it as is.
+     * @psalm-suppress ForbiddenCode
+     */
+    private function assertMinifiedFileLintedOk(string $filePath): void
+    {
+        $lintResult = shell_exec('php -l ' . $filePath);
+        $this->assertStringContainsString('No syntax errors detected in', $lintResult ?? '');
+    }
+
+    private function createReadonlyFile(): string
+    {
+        $filename = uniqid('test_', true) . '.php';
+        $mask = umask(0377); // disables --wxrwxrwx permissions
+        $fh = fopen($filename, "wb");
+        umask($mask);
+        fwrite($fh, '');
+        fclose($fh);
+
+        return $filename;
     }
 }

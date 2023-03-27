@@ -78,6 +78,28 @@ class PhpMinifier
     }
 
     /**
+     * Minify given php file and write result to another file.
+     * @throws IncorrectFileException
+     */
+    public function minifyFileToFile(string $filePath, string $outputFilePath): void
+    {
+        $minifiedContent = $this->minifyFile($filePath);
+
+        $this->writeToFile($minifiedContent, $outputFilePath);
+    }
+
+    /**
+     * Minify given php script content and write result to another file.
+     * @throws IncorrectFileException
+     */
+    public function minifyStringToFile(string $phpScriptContent, string $outputFilePath): void
+    {
+        $minifiedContent = $this->minifyString($phpScriptContent);
+
+        $this->writeToFile($minifiedContent, $outputFilePath);
+    }
+
+    /**
      * Minify given php script content.
      */
     public function minifyString(string $phpScriptContent): string
@@ -85,6 +107,26 @@ class PhpMinifier
         $tokens = $this->phpTokenizer->tokenizeString($phpScriptContent);
 
         return $this->minifyTokens($tokens);
+    }
+
+    /**
+     * @throws IncorrectFileException
+     */
+    private function writeToFile(string $content, string $outputFilePath): void
+    {
+        $this->assertOutputFilePathIsNotDirectory($outputFilePath);
+        $this->assertOutputFilePathIsWriteable($outputFilePath);
+
+        $fh = fopen($outputFilePath, 'wb');
+        if ($fh === false) {
+            throw new IncorrectFileException('Unable to write to file: ' . $outputFilePath);
+        }
+
+        if (!fwrite($fh, $content)) {
+            fclose($fh);
+            throw new IncorrectFileException('Unable to write to file: ' . $outputFilePath);
+        }
+        fclose($fh);
     }
 
     /** @param array<string,array<array-key,array{token:string}>> $tokens */
@@ -139,5 +181,21 @@ class PhpMinifier
         }
 
         return $str;
+    }
+
+    /** @throws IncorrectFileException */
+    public function assertOutputFilePathIsNotDirectory(string $outputFilePath): void
+    {
+        if (is_dir($outputFilePath)) {
+            throw new IncorrectFileException('File is a directory: ' . $outputFilePath);
+        }
+    }
+
+    /** @throws IncorrectFileException */
+    public function assertOutputFilePathIsWriteable(string $outputFilePath): void
+    {
+        if (file_exists($outputFilePath) && !is_writable($outputFilePath)) {
+            throw new IncorrectFileException('Unable to write to file: ' . $outputFilePath);
+        }
     }
 }
