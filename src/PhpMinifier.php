@@ -9,6 +9,9 @@ use PhpCodeMinifier\Validator\PhpFileValidator;
 
 class PhpMinifier
 {
+    public const VERSION = '1.1.0';
+    public const RELEASE_DATE = '2023-03-27';
+
     /**
      * We need these symbols as keys because searching that symbols in array wouldn't be so fast.
      * @var array<string, bool>
