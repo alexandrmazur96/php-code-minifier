@@ -40,6 +40,12 @@ $phpCodeMinifier->minifyFile('/path/to/your/file.php');
 // Or, if you already have the PHP code in a string, you can minify it with the following:
 $phpCode = '<?php echo "Hello World!";';
 $phpCodeMinifier->minifyString($phpCode);
+
+// Both this action can store the minified code in a file. Just use the following:
+
+$phpCodeMinifier->minifyStringToFile($phpCode, '/path/to/your/file.php');
+// Or
+$phpCodeMinifier->minifyFileToFile('/path/to/your/file.php', '/path/to/your/file.php');
 ```
 
 ## Contributing
