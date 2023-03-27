@@ -1,0 +1,56 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+require_once dirname(__DIR__) . '/vendor/autoload.php';
+
+use PhpCodeMinifier\MinifierFactory;
+use PhpCodeMinifier\PhpMinifier;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\SingleCommandApplication;
+
+$execute = static function (InputInterface $input, OutputInterface $output): int {
+    if (empty($input->getOption('from-file')) && empty($input->getOption('from-content'))) {
+        $output->writeln('<error>The option "--from-file" or "--from-content" should be provided.</error>');
+        return Command::FAILURE;
+    }
+
+    $phpCodeMinifier = (new MinifierFactory())->create();
+
+    $toFile = $input->getOption('to-file');
+    if (!empty($input->getOption('from-file'))) {
+        if (empty($toFile)) {
+            $output->writeln('');
+            $output->writeln($phpCodeMinifier->minifyFile($input->getOption('from-file')));
+        } else {
+            $phpCodeMinifier->minifyFileToFile($input->getOption('from-file'), $toFile);
+        }
+    } else {
+        if (empty($toFile)) {
+            $output->writeln('');
+            $output->writeln($phpCodeMinifier->minifyString($input->getOption('from-content')));
+        } else {
+            $phpCodeMinifier->minifyStringToFile($input->getOption('from-content'), $toFile);
+        }
+    }
+
+    if (!empty($toFile)) {
+        $output->writeln('<info>Minified code saved to</info> ' . $toFile);
+    }
+
+    return Command::SUCCESS;
+};
+
+(new SingleCommandApplication())
+    ->setName('PHP Code Minifier')
+    ->setVersion(PhpMinifier::VERSION . ' (' . PhpMinifier::RELEASE_DATE . ')')
+    ->setDescription('Minify PHP code.')
+    ->addOption('from-file', null, InputOption::VALUE_OPTIONAL, 'Path to php file to minify.')
+    ->addOption('from-content', null, InputOption::VALUE_OPTIONAL, 'PHP Script content to minify.')
+    ->addOption('to-file', null, InputOption::VALUE_OPTIONAL, 'Path to file to save minified code.')
+    ->setCode($execute)
+    ->run();
