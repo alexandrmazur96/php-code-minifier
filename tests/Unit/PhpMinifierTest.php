@@ -172,6 +172,7 @@ final class PhpMinifierTest extends TestCase
         yield 'with-php-class' => [self::FIXTURES_DIR . '/ActualFiles/PhpClass.php'];
         yield 'with-mixed-php-and-html' => [self::FIXTURES_DIR . '/ActualFiles/mixed-php-and-html.php'];
         yield 'with-single-line-comment' => [self::FIXTURES_DIR . '/ActualFiles/php-code-with-single-comment.php'];
+        yield 'heredoc-nowdoc' => [self::FIXTURES_DIR . '/ActualFiles/heredoc-nowdoc.php'];
     }
 
     /**

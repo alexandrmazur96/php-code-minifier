@@ -44,6 +44,49 @@ class PhpTokenizer
     }
 
     /**
+     * Removes the left-side padding from a PHP 7.3 heredoc and nowdoc.
+     *
+     * @param array{_PhpToken|string} $tokens
+     */
+    private function fixHeredocPadding(array &$tokens): void
+    {
+        $result = [];
+        while ($token = array_shift($tokens)) {
+            $result[] = $token;
+            if (is_string($token) || $token[0] !== T_START_HEREDOC) {
+                continue;
+            }
+
+            $docTokens = [];
+            $padding = '';
+            while ($docToken = array_shift($tokens)) {
+                $docTokens[] = $docToken;
+
+                if ($docToken[0] === T_END_HEREDOC) {
+                    // get the left side padding of the heredoc end
+                    $padding = preg_replace('|[^\s]|', '', $docToken[1]);
+
+                    break;
+                }
+            }
+
+            foreach ($docTokens as $docToken) {
+                $lines = explode(PHP_EOL, $docToken[1]);
+                foreach ($lines as &$line) {
+                    if (str_starts_with($line, $padding)) {
+                        $line = substr($line, strlen($padding));
+                    }
+                }
+                $docToken[1] = implode(PHP_EOL, $lines);
+
+                $result[] = $docToken;
+            }
+        }
+
+        $tokens = $result;
+    }
+
+    /**
      * To be sure that we have correct tokens sequence in result we need to split them into two groups: php and html.
      * We don't minify html, so we need to keep it as is.
      *
@@ -60,8 +103,10 @@ class PhpTokenizer
         $content = [];
         $index = 0;
         $currentContentType = '';
+        $tokens = token_get_all($fileContent);
+        $this->fixHeredocPadding($tokens);
         /** @var _PhpToken|string $token */
-        foreach (token_get_all($fileContent) as $token) {
+        foreach ($tokens as $token) {
             if (is_array($token) && ($token[0] === T_OPEN_TAG || $token[0] === T_OPEN_TAG_WITH_ECHO)) {
                 if ($currentContentType === 'html') {
                     $index++;

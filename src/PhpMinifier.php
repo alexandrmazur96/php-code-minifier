@@ -153,33 +153,55 @@ class PhpMinifier
     private function handlePhpTokens(array $tokens): string
     {
         $str = '';
-        foreach ($tokens as $i => $token) {
-            if (array_key_exists($i + 1, $tokens)) {
-                if (isset(self::SPEC_SYMBOLS[$tokens[$i + 1]['token']])) {
+        while (['token' => $token] = array_shift($tokens)) {
+            if (str_starts_with($token, '<<<')) {
+                if (str_starts_with($token, '<<<\'')) {
+                    // Nowdoc identifier
+                    $identifier = substr($token, 4, -1);
+                } else {
+                    // Heredoc identifier
+                    $identifier = substr($token, 3);
+                }
+
+                $str .= $token . PHP_EOL;
+                while (['token' => $docToken] = array_shift($tokens)) {
+                    $str .= $docToken;
+
+                    if ($docToken === $identifier) {
+                        // End of heredoc
+                        break;
+                    }
+                }
+
+                continue;
+            }
+
+            if (array_key_exists(0, $tokens)) {
+                if (isset(self::SPEC_SYMBOLS[$tokens[0]['token']])) {
                     // if next token is spec symbol - no need to add space before it.
-                    $str .= $token['token'];
+                    $str .= $token;
                     continue;
                 }
 
-                if ($token['token'] === 'else' && $tokens[$i + 1]['token'] === 'if') {
+                if ($token === 'else' && $tokens[0]['token'] === 'if') {
                     // "else if" construction could be written as elseif
-                    $str .= $token['token'];
+                    $str .= $token;
                     continue;
                 }
 
-                if (str_ends_with($token['token'], '*/')) {
+                if (str_ends_with($token, '*/')) {
                     // if current token is end of comment - no need to add space after it.
-                    $str .= $token['token'];
+                    $str .= $token;
                     continue;
                 }
             }
 
-            if (array_key_exists($token['token'], self::SPEC_SYMBOLS)) {
+            if (array_key_exists($token, self::SPEC_SYMBOLS)) {
                 // if current token is spec symbol - no need to add space after it.
-                $str .= $token['token'];
-            } elseif ($token['token'] !== '') {
+                $str .= $token;
+            } elseif ($token !== '') {
                 // each other statements should be divided by space.
-                $str .= $token['token'] . ' ';
+                $str .= $token . ' ';
             }
         }
 
