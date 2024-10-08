@@ -8,7 +8,7 @@ use PhpCodeMinifier\Validator\PhpFileValidator;
 
 class MinifierFactory
 {
-    public function create(): PhpMinifier
+    public static function create(): PhpMinifier
     {
         return new PhpMinifier(
             new PhpFileValidator(),
