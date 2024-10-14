@@ -9,7 +9,7 @@ use PhpCodeMinifier\Validator\PhpFileValidator;
 
 class PhpMinifier
 {
-    public const VERSION = '1.2.1';
+    public const VERSION = '1.2.2';
     public const RELEASE_DATE = '2024-10-14';
 
     /**
