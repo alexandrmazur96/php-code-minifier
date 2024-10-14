@@ -125,7 +125,7 @@ class PhpMinifier
             throw new IncorrectFileException('Unable to write to file: ' . $outputFilePath);
         }
 
-        if (!fwrite($fh, $content)) {
+        if (fwrite($fh, $content) === false) {
             fclose($fh);
             throw new IncorrectFileException('Unable to write to file: ' . $outputFilePath);
         }
