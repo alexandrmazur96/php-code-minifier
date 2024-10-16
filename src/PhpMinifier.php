@@ -125,7 +125,7 @@ class PhpMinifier
             throw new IncorrectFileException('Unable to write to file: ' . $outputFilePath);
         }
 
-        if (!fwrite($fh, $content)) {
+        if (fwrite($fh, $content) === false) {
             fclose($fh);
             throw new IncorrectFileException('Unable to write to file: ' . $outputFilePath);
         }
@@ -153,7 +153,11 @@ class PhpMinifier
     private function handlePhpTokens(array $tokens): string
     {
         $str = '';
-        while (['token' => $token] = array_shift($tokens)) {
+        while (['token' => $token] = (array_shift($tokens) ?? ['token' => null])) {
+            if ($token === null) {
+                break;
+            }
+
             if (str_starts_with($token, '<<<')) {
                 if (str_starts_with($token, '<<<\'')) {
                     // Nowdoc identifier
@@ -164,7 +168,11 @@ class PhpMinifier
                 }
 
                 $str .= $token . PHP_EOL;
-                while (['token' => $docToken] = array_shift($tokens)) {
+                while (['token' => $docToken] = (array_shift($tokens) ?? ['token' => null])) {
+                    if ($docToken === null) {
+                        break;
+                    }
+
                     $str .= $docToken;
 
                     if ($docToken === $identifier) {
