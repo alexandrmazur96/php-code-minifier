@@ -46,7 +46,7 @@ class PhpTokenizer
     /**
      * Removes the left-side padding from a PHP 7.3 heredoc and nowdoc.
      *
-     * @param array{_PhpToken|string} $tokens
+     * @param list<_PhpToken|string> $tokens
      */
     private function fixHeredocPadding(array &$tokens): void
     {
@@ -64,7 +64,7 @@ class PhpTokenizer
 
                 if ($docToken[0] === T_END_HEREDOC) {
                     // get the left side padding of the heredoc end
-                    $padding = preg_replace('|[^\s]|', '', $docToken[1]);
+                    $padding = preg_replace('|\S|', '', $docToken[1]);
 
                     break;
                 }
