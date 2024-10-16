@@ -1,4 +1,7 @@
-<?php echo <<<EOF
+<?php echo <<<"EOF"
+hello!
+how's it going?
+EOF;echo <<<EOF
 hello!
 how's it going?
 EOF;function test():string{return <<<'PHP'

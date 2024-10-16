@@ -159,8 +159,8 @@ class PhpMinifier
             }
 
             if (str_starts_with($token, '<<<')) {
-                if (str_starts_with($token, '<<<\'')) {
-                    // Nowdoc identifier
+                if (str_starts_with($token, '<<<\'') || str_starts_with($token, '<<<"')) {
+                    // Nowdoc and heredoc with double quote identifier
                     $identifier = substr($token, 4, -1);
                 } else {
                     // Heredoc identifier
