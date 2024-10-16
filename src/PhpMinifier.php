@@ -155,7 +155,7 @@ class PhpMinifier
         $str = '';
         while (['token' => $token] = (array_shift($tokens) ?? ['token' => null])) {
             if ($token === null) {
-                continue;
+                break;
             }
 
             if (str_starts_with($token, '<<<')) {
@@ -170,7 +170,7 @@ class PhpMinifier
                 $str .= $token . PHP_EOL;
                 while (['token' => $docToken] = (array_shift($tokens) ?? ['token' => null])) {
                     if ($docToken === null) {
-                        continue;
+                        break;
                     }
 
                     $str .= $docToken;
