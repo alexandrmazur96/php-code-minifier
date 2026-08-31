@@ -60,6 +60,9 @@ class PhpMinifier
         '?>'  => true,
     ];
 
+    /** @var array<string, list<array{int, string}|string>> */
+    private array $tokenComparisonCache = [];
+
     public function __construct(
         private PhpFileValidator $phpFileValidator,
         private PhpTokenizer     $phpTokenizer
@@ -132,9 +135,10 @@ class PhpMinifier
         fclose($fh);
     }
 
-    /** @param array<string,array<array-key,array{token:string}>> $tokens */
+    /** @param array<string,array<array-key,array{token:string, inString:bool}>> $tokens */
     private function minifyTokens(array $tokens): string
     {
+        $this->tokenComparisonCache = [];
         $str = '';
         foreach ($tokens as $tokensType => $tokenItems) {
             if (str_contains($tokensType, 'php')) {
@@ -146,16 +150,26 @@ class PhpMinifier
             }
         }
 
+        $this->tokenComparisonCache = [];
+
         return $str;
     }
 
-    /** @param array<int, array{token:string}> $tokens */
+    /** @param array<int, array{token:string, inString:bool}> $tokens */
     private function handlePhpTokens(array $tokens): string
     {
         $str = '';
-        while (['token' => $token] = (array_shift($tokens) ?? ['token' => null])) {
+        while (
+            ['token' => $token, 'inString' => $inString]
+            = (array_shift($tokens) ?? ['token' => null, 'inString' => false])
+        ) {
             if ($token === null) {
                 break;
+            }
+
+            if ($inString) {
+                $str .= $token;
+                continue;
             }
 
             if (str_starts_with($token, '<<<')) {
@@ -185,7 +199,10 @@ class PhpMinifier
             }
 
             if (array_key_exists(0, $tokens)) {
-                if (isset(self::SPEC_SYMBOLS[$tokens[0]['token']])) {
+                if (
+                    isset(self::SPEC_SYMBOLS[$tokens[0]['token']])
+                    && !$this->tokensRequireWhitespace($token, $tokens[0]['token'])
+                ) {
                     // if next token is spec symbol - no need to add space before it.
                     $str .= $token;
                     continue;
@@ -197,16 +214,21 @@ class PhpMinifier
                     continue;
                 }
 
-                if (str_ends_with($token, '*/')) {
-                    // if current token is end of comment - no need to add space after it.
+                if (str_ends_with($token, '*/') || str_ends_with($token, PHP_EOL)) {
+                    // Comments already provide a safe token boundary.
                     $str .= $token;
                     continue;
                 }
             }
 
             if (array_key_exists($token, self::SPEC_SYMBOLS)) {
-                // if current token is spec symbol - no need to add space after it.
                 $str .= $token;
+                if (
+                    array_key_exists(0, $tokens)
+                    && $this->tokensRequireWhitespace($token, $tokens[0]['token'])
+                ) {
+                    $str .= ' ';
+                }
             } elseif ($token !== '') {
                 // each other statements should be divided by space.
                 $str .= $token . ' ';
@@ -214,6 +236,37 @@ class PhpMinifier
         }
 
         return $str;
+    }
+
+    private function tokensRequireWhitespace(string $leftToken, string $rightToken): bool
+    {
+        return $this->tokenizeForComparison($leftToken . $rightToken)
+            !== $this->tokenizeForComparison($leftToken . ' ' . $rightToken);
+    }
+
+    /** @return list<array{int, string}|string> */
+    private function tokenizeForComparison(string $phpCode): array
+    {
+        if (array_key_exists($phpCode, $this->tokenComparisonCache)) {
+            return $this->tokenComparisonCache[$phpCode];
+        }
+
+        $result = [];
+        foreach (token_get_all('<?php ' . $phpCode) as $token) {
+            if (is_array($token)) {
+                if ($token[0] === T_OPEN_TAG || $token[0] === T_WHITESPACE) {
+                    continue;
+                }
+
+                $result[] = [$token[0], $token[1]];
+            } else {
+                $result[] = $token;
+            }
+        }
+
+        $this->tokenComparisonCache[$phpCode] = $result;
+
+        return $result;
     }
 
     /** @throws IncorrectFileException */

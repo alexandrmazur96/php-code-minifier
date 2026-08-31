@@ -24,15 +24,13 @@ $execute = static function (InputInterface $input, OutputInterface $output): int
     $toFile = $input->getOption('to-file');
     if (!empty($input->getOption('from-file'))) {
         if (empty($toFile)) {
-            $output->writeln('');
-            $output->writeln($phpCodeMinifier->minifyFile($input->getOption('from-file')));
+            $output->write($phpCodeMinifier->minifyFile($input->getOption('from-file')));
         } else {
             $phpCodeMinifier->minifyFileToFile($input->getOption('from-file'), $toFile);
         }
     } else {
         if (empty($toFile)) {
-            $output->writeln('');
-            $output->writeln($phpCodeMinifier->minifyString($input->getOption('from-content')));
+            $output->write($phpCodeMinifier->minifyString($input->getOption('from-content')));
         } else {
             $phpCodeMinifier->minifyStringToFile($input->getOption('from-content'), $toFile);
         }

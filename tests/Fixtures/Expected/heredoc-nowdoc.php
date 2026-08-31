@@ -25,12 +25,14 @@ This is a pre-7.3 nowdoc.
 EOF,'Test',123);printf(<<<'EOF'
         This has padding!
         It needs to keep it.
-EOF);}}}}}}/*// no indentation*/echo <<<END
+EOF);}}}}}}// no indentation
+echo <<<END
       a
      b
     c
 \n
-END;/*// 4 spaces of indentation*/echo <<<END
+END;// 4 spaces of indentation
+echo <<<END
   a
  b
 c

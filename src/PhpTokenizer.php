@@ -20,7 +20,7 @@ class PhpTokenizer
 
     /**
      * Parse php file with built-in {@see token_get_all()} function and return proper code sequence.
-     * @return array<string,array<array-key,array{token:string}>>
+     * @return array<string,array<array-key,array{token:string, inString:bool}>>
      * @throws IncorrectFileException
      */
     public function tokenizeFile(string $filePath): array
@@ -36,7 +36,7 @@ class PhpTokenizer
 
     /**
      * Parse php script with built-in {@see token_get_all()} function and return proper code sequence.
-     * @return array<string,array<array-key,array{token:string}>>
+     * @return array<string,array<array-key,array{token:string, inString:bool}>>
      */
     public function tokenizeString(string $phpScriptContent): array
     {
@@ -62,7 +62,7 @@ class PhpTokenizer
             while ($docToken = array_shift($tokens)) {
                 $docTokens[] = $docToken;
 
-                if ($docToken[0] === T_END_HEREDOC) {
+                if (is_array($docToken) && $docToken[0] === T_END_HEREDOC) {
                     // get the left side padding of the heredoc end
                     $padding = preg_replace('|\S|', '', $docToken[1]);
 
@@ -71,6 +71,11 @@ class PhpTokenizer
             }
 
             foreach ($docTokens as $docToken) {
+                if (is_string($docToken)) {
+                    $result[] = $docToken;
+                    continue;
+                }
+
                 $lines = explode(PHP_EOL, $docToken[1]);
                 foreach ($lines as &$line) {
                     if (str_starts_with($line, $padding)) {
@@ -96,13 +101,14 @@ class PhpTokenizer
      * 3. If we have T_INLINE_HTML we add it to html group.
      * 4. Each new group starts with new index so when we iterate through result array we will keep correct sequence.
      *
-     * @psalm-return array<string, list<array{token: string}>>
+     * @psalm-return array<string, list<array{token: string, inString: bool}>>
      */
     private function tokenizeContent(string $fileContent): array
     {
         $content = [];
         $index = 0;
         $currentContentType = '';
+        $inString = false;
         $tokens = token_get_all($fileContent);
         $this->fixHeredocPadding($tokens);
         /** @var _PhpToken|string $token */
@@ -112,7 +118,10 @@ class PhpTokenizer
                     $index++;
                 }
                 $currentContentType = 'php';
-                $content['php_' . $index][] = ['token' => (string)preg_replace('|\s+|', '', $token[1])];
+                $content['php_' . $index][] = [
+                    'token' => (string)preg_replace('|\s+|', '', $token[1]),
+                    'inString' => false,
+                ];
                 continue;
             }
             if (is_array($token) && $token[0] === T_INLINE_HTML) {
@@ -120,9 +129,17 @@ class PhpTokenizer
                     $index++;
                 }
                 $currentContentType = 'html';
-                $content['html_' . $index][] = ['token' => $token[1]];
+                $content['html_' . $index][] = [
+                    'token' => $token[1],
+                    'inString' => false,
+                ];
                 continue;
             }
+
+            $isStringDelimiter = $currentContentType === 'php'
+                && is_string($token)
+                && ($token === '"' || $token === '`');
+            $tokenIsInString = $inString || $isStringDelimiter;
 
             if (is_array($token)) {
                 $tokenStr = $token[1];
@@ -130,23 +147,37 @@ class PhpTokenizer
                 $tokenStr = $token;
             }
 
-            if (trim($tokenStr) === '') {
+            if (trim($tokenStr) === '' && !$tokenIsInString) {
                 continue;
             }
 
-            if ($currentContentType === 'php') {
-                if (is_array($token) && $token[0] === T_COMMENT && str_starts_with($token[1], '//')) {
-                    $tokenStr = '/*' . $tokenStr . '*/';
-                } elseif (!array_key_exists($token[0], self::STRING_TOKENS)) {
+            if ($currentContentType === 'php' && !$tokenIsInString) {
+                if (is_array($token) && $token[0] === T_COMMENT && $this->isSingleLineComment($token[1])) {
+                    $tokenStr .= PHP_EOL;
+                } elseif (
+                    is_array($token)
+                    && $token[0] !== T_COMMENT
+                    && !array_key_exists($token[0], self::STRING_TOKENS)
+                ) {
                     $tokenStr = (string)preg_replace('|\s+|', '', $tokenStr);
                 }
             }
 
             $content[$currentContentType . '_' . $index][] = [
                 'token' => $tokenStr,
+                'inString' => $tokenIsInString,
             ];
+
+            if ($isStringDelimiter) {
+                $inString = !$inString;
+            }
         }
 
         return $content;
+    }
+
+    private function isSingleLineComment(string $comment): bool
+    {
+        return str_starts_with($comment, '//') || str_starts_with($comment, '#');
     }
 }
