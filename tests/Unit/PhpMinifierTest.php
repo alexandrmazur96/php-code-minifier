@@ -259,11 +259,12 @@ PHP;
      */
     private function executePhpCode(string $phpCode): string
     {
-        $filePath = self::FIXTURES_DIR . '/tmp.php';
+        $filePath = tempnam(sys_get_temp_dir(), 'php-code-minifier-');
+        $this->assertNotFalse($filePath);
         file_put_contents($filePath, $phpCode);
 
         try {
-            return (string)shell_exec('php ' . escapeshellarg($filePath));
+            return (string)shell_exec(escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($filePath));
         } finally {
             @unlink($filePath);
         }
