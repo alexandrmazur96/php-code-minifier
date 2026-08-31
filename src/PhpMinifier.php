@@ -185,7 +185,10 @@ class PhpMinifier
             }
 
             if (array_key_exists(0, $tokens)) {
-                if (isset(self::SPEC_SYMBOLS[$tokens[0]['token']])) {
+                if (
+                    isset(self::SPEC_SYMBOLS[$tokens[0]['token']])
+                    && !$this->tokensRequireWhitespace($token, $tokens[0]['token'])
+                ) {
                     // if next token is spec symbol - no need to add space before it.
                     $str .= $token;
                     continue;
@@ -197,16 +200,21 @@ class PhpMinifier
                     continue;
                 }
 
-                if (str_ends_with($token, '*/')) {
-                    // if current token is end of comment - no need to add space after it.
+                if (str_ends_with($token, '*/') || str_ends_with($token, PHP_EOL)) {
+                    // Comments already provide a safe token boundary.
                     $str .= $token;
                     continue;
                 }
             }
 
             if (array_key_exists($token, self::SPEC_SYMBOLS)) {
-                // if current token is spec symbol - no need to add space after it.
                 $str .= $token;
+                if (
+                    array_key_exists(0, $tokens)
+                    && $this->tokensRequireWhitespace($token, $tokens[0]['token'])
+                ) {
+                    $str .= ' ';
+                }
             } elseif ($token !== '') {
                 // each other statements should be divided by space.
                 $str .= $token . ' ';
@@ -214,6 +222,31 @@ class PhpMinifier
         }
 
         return $str;
+    }
+
+    private function tokensRequireWhitespace(string $leftToken, string $rightToken): bool
+    {
+        return $this->tokenizeForComparison($leftToken . $rightToken)
+            !== $this->tokenizeForComparison($leftToken . ' ' . $rightToken);
+    }
+
+    /** @return list<array{int, string}|string> */
+    private function tokenizeForComparison(string $phpCode): array
+    {
+        $result = [];
+        foreach (token_get_all('<?php ' . $phpCode) as $token) {
+            if (is_array($token)) {
+                if ($token[0] === T_OPEN_TAG || $token[0] === T_WHITESPACE) {
+                    continue;
+                }
+
+                $result[] = [$token[0], $token[1]];
+            } else {
+                $result[] = $token;
+            }
+        }
+
+        return $result;
     }
 
     /** @throws IncorrectFileException */
