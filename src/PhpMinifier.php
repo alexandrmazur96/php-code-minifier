@@ -60,6 +60,9 @@ class PhpMinifier
         '?>'  => true,
     ];
 
+    /** @var array<string, list<array{int, string}|string>> */
+    private array $tokenComparisonCache = [];
+
     public function __construct(
         private PhpFileValidator $phpFileValidator,
         private PhpTokenizer     $phpTokenizer
@@ -135,6 +138,7 @@ class PhpMinifier
     /** @param array<string,array<array-key,array{token:string}>> $tokens */
     private function minifyTokens(array $tokens): string
     {
+        $this->tokenComparisonCache = [];
         $str = '';
         foreach ($tokens as $tokensType => $tokenItems) {
             if (str_contains($tokensType, 'php')) {
@@ -145,6 +149,8 @@ class PhpMinifier
                 }
             }
         }
+
+        $this->tokenComparisonCache = [];
 
         return $str;
     }
@@ -233,6 +239,10 @@ class PhpMinifier
     /** @return list<array{int, string}|string> */
     private function tokenizeForComparison(string $phpCode): array
     {
+        if (array_key_exists($phpCode, $this->tokenComparisonCache)) {
+            return $this->tokenComparisonCache[$phpCode];
+        }
+
         $result = [];
         foreach (token_get_all('<?php ' . $phpCode) as $token) {
             if (is_array($token)) {
@@ -245,6 +255,8 @@ class PhpMinifier
                 $result[] = $token;
             }
         }
+
+        $this->tokenComparisonCache[$phpCode] = $result;
 
         return $result;
     }
