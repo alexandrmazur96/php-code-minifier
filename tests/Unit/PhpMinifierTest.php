@@ -79,6 +79,44 @@ final class PhpMinifierTest extends TestCase
     }
 
     /**
+     * @dataProvider expressionsWithSignificantWhitespaceProvider
+     */
+    public function testMinifyStringDoesNotMergeTokens(string $phpCode, string $expectedOutput): void
+    {
+        $minifiedCode = $this->minifier->minifyString($phpCode);
+
+        $this->assertSame($expectedOutput, $this->executePhpCode($minifiedCode));
+        $this->assertMinifiedCodeLintedOk($minifiedCode);
+    }
+
+    /**
+     * @dataProvider singleLineCommentsProvider
+     */
+    public function testMinifyStringPreservesSingleLineCommentBoundary(string $phpCode): void
+    {
+        $minifiedCode = $this->minifier->minifyString($phpCode);
+
+        $this->assertSame('12', $this->executePhpCode($minifiedCode));
+        $this->assertMinifiedCodeLintedOk($minifiedCode);
+    }
+
+    public function testMinifyStringSupportsComplexHeredocInterpolation(): void
+    {
+        $phpCode = <<<'PHP'
+<?php
+$name = 'world';
+echo <<<TEXT
+Hello, {$name}!
+TEXT;
+PHP;
+
+        $minifiedCode = $this->minifier->minifyString($phpCode);
+
+        $this->assertSame('Hello, world!', $this->executePhpCode($minifiedCode));
+        $this->assertMinifiedCodeLintedOk($minifiedCode);
+    }
+
+    /**
      * @dataProvider phpFilesProvider
      * @throws IncorrectFileException
      */
@@ -175,6 +213,21 @@ final class PhpMinifierTest extends TestCase
         yield 'heredoc-nowdoc' => [self::FIXTURES_DIR . '/ActualFiles/heredoc-nowdoc.php'];
     }
 
+    /** @psalm-return Generator<string, list{string, string}, mixed, void> */
+    public static function expressionsWithSignificantWhitespaceProvider(): Generator
+    {
+        yield 'numeric concatenation' => ['<?php echo 1 . 2;', '12'];
+        yield 'binary and unary plus' => ['<?php echo 1 + +2;', '3'];
+        yield 'binary and unary minus' => ['<?php echo 1 - -2;', '3'];
+    }
+
+    /** @psalm-return Generator<string, list{string}, mixed, void> */
+    public static function singleLineCommentsProvider(): Generator
+    {
+        yield 'hash comment' => ["<?php echo 1; # comment\necho 2;"];
+        yield 'double-slash comment containing block-comment terminator' => ["<?php echo 1; // */\necho 2;"];
+    }
+
     /**
      * We do understand, that calling shell_exec is unsafe, but for testing purposes we leave it as is.
      * @psalm-suppress ForbiddenCode
@@ -199,6 +252,21 @@ final class PhpMinifierTest extends TestCase
     {
         $lintResult = shell_exec('php -l ' . $filePath);
         $this->assertStringContainsString('No syntax errors detected in', $lintResult ?? '');
+    }
+
+    /**
+     * @psalm-suppress ForbiddenCode
+     */
+    private function executePhpCode(string $phpCode): string
+    {
+        $filePath = self::FIXTURES_DIR . '/tmp.php';
+        file_put_contents($filePath, $phpCode);
+
+        try {
+            return (string)shell_exec('php ' . escapeshellarg($filePath));
+        } finally {
+            @unlink($filePath);
+        }
     }
 
     private function createReadonlyFile(): string
