@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PhpCodeMinifier\Tests\Unit\Validator;
 
+use Override;
 use PhpCodeMinifier\Exceptions\IncorrectFileException;
 use PhpCodeMinifier\Tests\TestCase;
 use PhpCodeMinifier\Validator\PhpFileValidator;
@@ -12,12 +13,14 @@ final class PhpFileValidatorTest extends TestCase
 {
     private PhpFileValidator $validator;
 
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
         $this->validator = new PhpFileValidator();
     }
 
+    #[Override]
     protected function tearDown(): void
     {
         unset($this->validator);
