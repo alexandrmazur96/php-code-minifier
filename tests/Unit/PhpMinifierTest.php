@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PhpCodeMinifier\Tests\Unit;
 
 use Generator;
+use Override;
 use PhpCodeMinifier\Exceptions\IncorrectFileException;
 use PhpCodeMinifier\PhpMinifier;
 use PhpCodeMinifier\PhpTokenizer;
@@ -15,6 +16,7 @@ final class PhpMinifierTest extends TestCase
 {
     private PhpMinifier $minifier;
 
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
@@ -24,6 +26,7 @@ final class PhpMinifierTest extends TestCase
         );
     }
 
+    #[Override]
     protected function tearDown(): void
     {
         unset($this->minifier);

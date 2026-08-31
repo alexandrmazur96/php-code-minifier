@@ -6,6 +6,7 @@ namespace PhpCodeMinifier\Tests\Unit;
 
 use Closure;
 use Generator;
+use Override;
 use PhpCodeMinifier\Exceptions\IncorrectFileException;
 use PhpCodeMinifier\PhpTokenizer;
 use PhpCodeMinifier\Tests\TestCase;
@@ -17,18 +18,21 @@ final class PhpTokenizerTest extends TestCase
 
     private static Closure $tokenFilter;
 
+    #[Override]
     protected function setUp(): void
     {
         parent::setUp();
         $this->phpTokenizer = new PhpTokenizer();
     }
 
+    #[Override]
     protected function tearDown(): void
     {
         unset($this->phpTokenizer);
         parent::tearDown();
     }
 
+    #[Override]
     public static function setUpBeforeClass(): void
     {
         parent::setUpBeforeClass();
