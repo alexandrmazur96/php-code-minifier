@@ -14,7 +14,6 @@ jobs:
   quality:
     name: Run quality checks on PHP v${{ matrix.php }}
     runs-on: ubuntu-latest
-    continue-on-error: true
     strategy:
       matrix:
         php: ['8.0', '8.1', '8.2', '8.3']
