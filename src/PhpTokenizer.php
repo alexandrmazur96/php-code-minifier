@@ -62,7 +62,7 @@ class PhpTokenizer
             while ($docToken = array_shift($tokens)) {
                 $docTokens[] = $docToken;
 
-                if ($docToken[0] === T_END_HEREDOC) {
+                if (is_array($docToken) && $docToken[0] === T_END_HEREDOC) {
                     // get the left side padding of the heredoc end
                     $padding = preg_replace('|\S|', '', $docToken[1]);
 
@@ -71,6 +71,11 @@ class PhpTokenizer
             }
 
             foreach ($docTokens as $docToken) {
+                if (is_string($docToken)) {
+                    $result[] = $docToken;
+                    continue;
+                }
+
                 $lines = explode(PHP_EOL, $docToken[1]);
                 foreach ($lines as &$line) {
                     if (str_starts_with($line, $padding)) {
@@ -135,9 +140,13 @@ class PhpTokenizer
             }
 
             if ($currentContentType === 'php') {
-                if (is_array($token) && $token[0] === T_COMMENT && str_starts_with($token[1], '//')) {
-                    $tokenStr = '/*' . $tokenStr . '*/';
-                } elseif (!array_key_exists($token[0], self::STRING_TOKENS)) {
+                if (is_array($token) && $token[0] === T_COMMENT && $this->isSingleLineComment($token[1])) {
+                    $tokenStr .= PHP_EOL;
+                } elseif (
+                    is_array($token)
+                    && $token[0] !== T_COMMENT
+                    && !array_key_exists($token[0], self::STRING_TOKENS)
+                ) {
                     $tokenStr = (string)preg_replace('|\s+|', '', $tokenStr);
                 }
             }
@@ -148,5 +157,10 @@ class PhpTokenizer
         }
 
         return $content;
+    }
+
+    private function isSingleLineComment(string $comment): bool
+    {
+        return str_starts_with($comment, '//') || str_starts_with($comment, '#');
     }
 }
