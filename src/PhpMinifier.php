@@ -135,7 +135,7 @@ class PhpMinifier
         fclose($fh);
     }
 
-    /** @param array<string,array<array-key,array{token:string}>> $tokens */
+    /** @param array<string,array<array-key,array{token:string, inString:bool}>> $tokens */
     private function minifyTokens(array $tokens): string
     {
         $this->tokenComparisonCache = [];
@@ -155,13 +155,21 @@ class PhpMinifier
         return $str;
     }
 
-    /** @param array<int, array{token:string}> $tokens */
+    /** @param array<int, array{token:string, inString:bool}> $tokens */
     private function handlePhpTokens(array $tokens): string
     {
         $str = '';
-        while (['token' => $token] = (array_shift($tokens) ?? ['token' => null])) {
+        while (
+            ['token' => $token, 'inString' => $inString]
+            = (array_shift($tokens) ?? ['token' => null, 'inString' => false])
+        ) {
             if ($token === null) {
                 break;
+            }
+
+            if ($inString) {
+                $str .= $token;
+                continue;
             }
 
             if (str_starts_with($token, '<<<')) {

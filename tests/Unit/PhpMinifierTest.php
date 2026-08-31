@@ -116,6 +116,20 @@ PHP;
         $this->assertMinifiedCodeLintedOk($minifiedCode);
     }
 
+    public function testMinifyStringPreservesInterpolatedDoubleQuotedString(): void
+    {
+        $phpCode = <<<'PHP'
+<?php
+$name = 'world';
+echo "Hello,{$name}!";
+PHP;
+
+        $minifiedCode = $this->minifier->minifyString($phpCode);
+
+        $this->assertSame('Hello,world!', $this->executePhpCode($minifiedCode));
+        $this->assertMinifiedCodeLintedOk($minifiedCode);
+    }
+
     /**
      * @dataProvider phpFilesProvider
      * @throws IncorrectFileException
